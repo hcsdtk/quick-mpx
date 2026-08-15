@@ -2,8 +2,8 @@
   <view class="mask" wx:if="{{show}}" bindtap="tapHandle"></view>
 </template>
 
-<script>
-import { createComponent } from '@mpxjs/core'
+<script lang="ts">
+import { createComponent, ref, watch } from '@mpxjs/core'
 
 createComponent({
   properties: {
@@ -11,26 +11,28 @@ createComponent({
       //用于外部控制组件显示和隐藏
       type: Boolean,
       value: true,
-      observer(newVal) {
-        this.show = newVal
-      }
     },
     isClick: {
       type: Boolean,
       value: false
     }
   },
-  data: {
-    show: true
-  },
-  methods: {
-    tapHandle() {
-      if (!this.isClick) {
-        return false
+  setup (props, { triggerEvent }) {
+    const show = ref(props.visible)
+
+    watch(() => props.visible, value => {
+      show.value = value
+    }, { immediate: true })
+
+    const tapHandle = (): void => {
+      if (!props.isClick) {
+        return
       }
-      this.show = false
-      this.triggerEvent('maskHide')
+      show.value = false
+      triggerEvent('maskHide')
     }
+
+    return { show, tapHandle }
   }
 })
 </script>

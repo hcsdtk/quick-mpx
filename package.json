@@ -18,10 +18,11 @@
     "build:cross": "mpx-cli-service build --targets=wx,ali,web",
     "build:ali": "mpx-cli-service build --targets=ali",
     "build:web": "mpx-cli-service build --targets=web",
-    "lint": "eslint --ext .js,.mpx src/",
+    "lint": "eslint --ext .js,.ts,.mpx src/",
     "lint:fix": "npm run lint -- --fix",
+    "typecheck": "tsc --noEmit",
     "clean": "rimraf dist .cache",
-    "verify": "npm run lint && npm run build",
+    "verify": "npm run lint && npm run typecheck && npm run build",
     "help": "mpx-cli-service help"
   },
   "repository": {
@@ -48,8 +49,10 @@
     "@mpxjs/api-proxy": "^2.11.1",
     "@mpxjs/core": "^2.11.1",
     "@mpxjs/fetch": "^2.11.1",
-    "@mpxjs/store": "^2.11.0",
+    "@mpxjs/pinia": "^2.11.0",
+    "pinia": "^2.3.1",
     "vue": "^2.7.16",
+    "vue-demi": "^0.14.10",
     "vue-i18n": "^8.28.2",
     "vue-i18n-bridge": "^9.14.1",
     "vue-router": "^3.6.5"
@@ -62,13 +65,19 @@
     "@mpxjs/babel-plugin-inject-page-events": "^2.10.21",
     "@mpxjs/eslint-config": "^2.0.14",
     "@mpxjs/mpx-cli-service": "^2.2.30",
+    "@mpxjs/unocss-base": "^2.11.1",
+    "@mpxjs/unocss-plugin": "^2.11.1",
     "@mpxjs/vue-cli-plugin-mpx": "^2.2.30",
+    "@mpxjs/vue-cli-plugin-mpx-typescript": "^2.2.30",
     "@mpxjs/webpack-plugin": "^2.11.1",
+    "@types/node": "^22.20.1",
     "eslint": "^9.39.5",
     "process": "^0.11.10",
     "rimraf": "^5.0.10",
     "stylus": "^0.64.0",
     "stylus-loader": "^8.1.0",
+    "typescript": "^5.9.3",
+    "unocss": "^66.7.5",
     "webpack": "^5.109.2"
   }
 }

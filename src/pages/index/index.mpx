@@ -1,6 +1,6 @@
 <template>
   <dialog id="loginDialog"></dialog>
-  <view class="page white">
+  <view class="page white bg-white">
     <view class="index-banner">
       <image class="banner-img" lazy-load src="{{ indexInfo.banner }}"></image>
     </view>
@@ -65,53 +65,58 @@
   </view>
 </template>
 
-<script>
-import mpx, { createPage } from '@mpxjs/core'
-import IndexApi from '../../api/Index'
+<script lang="ts">
+import mpx, { createPage, onShow, ref } from '@mpxjs/core'
+import IndexApi, { type IndexInfo } from '../../api/Index'
 import WxUtils from '../../utils/WxUtils'
 
 createPage({
-  data: {
-    indexInfo: {
-      list: [],
-    },
-  },
-  onShow() {
-    this.getIndex()
-  },
-  getIndex() {
-    IndexApi.index()
-      .then(res => {
-        console.log(res)
-        this.indexInfo = res
-      })
-      .catch(e => {
-        console.log(e)
-      })
-  },
-  showDialog(options) {
-    const dialog = this.selectComponent('#loginDialog')
-    if (!dialog) {
-      return Promise.reject(new Error('登录弹窗尚未挂载'))
-    }
-    return dialog.open(options)
-  },
-  async toScan() {
-    try {
-      const res = await mpx.scanCode({ onlyFromCamera: true })
-      if (res.path) {
-        return WxUtils.navigate(res.path)
-      }
-      return this.showDialog({
-        title: '温馨提示',
-        content: `虽然你不是扫描“好色派沙拉桌号”，但是我还是告诉你，你这次扫描的内容是：${res.result}`
-      })
-    } catch (error) {
-      // 用户主动取消扫码时不需要打扰；其他错误保留日志便于排查。
-      if (!error || !String(error.errMsg || '').includes('cancel')) {
-        console.error('扫码失败', error)
+  setup (_, context) {
+    const indexInfo = ref<IndexInfo>({ list: [] })
+
+    const getIndex = async (): Promise<void> => {
+      try {
+        indexInfo.value = await IndexApi.index()
+      } catch (error) {
+        console.error('首页数据加载失败', error)
       }
     }
+
+    const showDialog = (options: Record<string, string>): Promise<unknown> => {
+      const dialog = context.selectComponent('#loginDialog') as unknown as {
+        open: (dialogOptions?: Record<string, string>) => Promise<unknown>
+      } | null
+      if (!dialog) {
+        return Promise.reject(new Error('登录弹窗尚未挂载'))
+      }
+      return dialog.open(options)
+    }
+
+    const toScan = async (): Promise<void> => {
+      try {
+        const res = await (mpx as any).scanCode({ onlyFromCamera: true }) as {
+          path?: string
+          result?: string
+        }
+        if (res.path) {
+          WxUtils.navigate(res.path)
+          return
+        }
+        await showDialog({
+          title: '温馨提示',
+          content: `虽然你不是扫描“好色派沙拉桌号”，但是我还是告诉你，你这次扫描的内容是：${res.result || ''}`
+        })
+      } catch (error) {
+        // 用户主动取消扫码时不需要打扰；其他错误保留日志便于排查。
+        if (!error || !String((error as { errMsg?: string }).errMsg || '').includes('cancel')) {
+          console.error('扫码失败', error)
+        }
+      }
+    }
+
+    onShow(getIndex)
+
+    return { indexInfo, toScan }
   },
 })
 </script>

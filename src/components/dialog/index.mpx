@@ -18,41 +18,63 @@
   </view>
 </template>
 
-<script>
-import { createComponent } from '@mpxjs/core'
+<script lang="ts">
+import { createComponent, ref, watch } from '@mpxjs/core'
 
-const _f = () => {}
+interface DialogOptions {
+  title?: string
+  content?: string
+  btnText?: string
+}
+
+interface UserInfoEvent {
+  detail?: {
+    errMsg?: string
+    [key: string]: unknown
+  }
+  [key: string]: unknown
+}
+
+interface DialogState {
+  title: string
+  content: string
+  btnText: string
+  resolve: (value: UserInfoEvent['detail']) => void
+  reject: (reason?: unknown) => void
+}
+
 createComponent({
   properties: {
     visible: {
       //用于外部控制组件显示和隐藏
       type: Boolean,
       value: false,
-      observer(newVal) {
-        this.show = newVal
-      }
     }
   },
-  data: {
-    show: false,
-    dialog: {
+  setup (props) {
+    const show = ref(props.visible)
+    const noop = (): void => {}
+    const dialog = ref<DialogState>({
       title: '登录小程序',
       content: `等你好久了！\r\n欢迎来到权味+小程序。`,
       btnText: '登录权味+',
-      resolve: _f,
-      reject: _f
-    }
-  },
-  methods: {
-    open(options = {}) {
+      resolve: noop,
+      reject: noop
+    })
+
+    watch(() => props.visible, value => {
+      show.value = value
+    }, { immediate: true })
+
+    const open = (options: DialogOptions = {}): Promise<UserInfoEvent['detail']> => {
       const {
         title = '登录小程序',
         content = `等你好久了！\r\n欢迎来到权味+小程序。`,
         btnText = '登录权味+'
       } = options
       return new Promise((resolve, reject) => {
-        this.show = true
-        this.dialog = {
+        show.value = true
+        dialog.value = {
           title,
           content,
           btnText,
@@ -60,18 +82,20 @@ createComponent({
           reject
         }
       })
-    },
-    bindgetuserinfo(e) {
-      const dialogData = this.dialog || {}
-      const { resolve = _f, reject = _f } = dialogData
-      const detail = e.detail || {}
-      this.show = false
+    }
+
+    const bindgetuserinfo = (event: UserInfoEvent): void => {
+      const { resolve, reject } = dialog.value
+      const detail = event.detail || {}
+      show.value = false
       if (String(detail.errMsg || '').endsWith(':ok')) {
-        resolve(e.detail)
+        resolve(detail)
       } else {
         reject(detail)
       }
     }
+
+    return { show, dialog, open, bindgetuserinfo }
   }
 })
 </script>

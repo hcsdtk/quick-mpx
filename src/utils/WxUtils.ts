@@ -1,19 +1,29 @@
 import mpx from '@mpxjs/core'
 
+interface PaymentParams {
+  complete?: (result: PaymentResult) => void
+  [key: string]: unknown
+}
+
+export interface PaymentResult {
+  errMsg?: string
+  [key: string]: unknown
+}
+
 export default class WxUtils {
   static get tabUrls () {
     return ['/pages/index/index', '/pages/member/index', '/pages/mine/index', '/pages/order/index']
   }
 
-  static isTab (url) {
+  static isTab (url: string): boolean {
     return this.tabUrls.some(path => path === url)
   }
 
-  static handleScanUrl (url) {
+  static handleScanUrl (url: string): string {
     return url.indexOf('/') === 0 ? url : '/' + url
   }
 
-  static redirect (url) {
+  static redirect (url: string): void {
     url = this.handleScanUrl(url)
     if (this.isTab(url)) {
       mpx.switchTab({
@@ -26,7 +36,7 @@ export default class WxUtils {
     }
   }
 
-  static navigate (url, params) {
+  static navigate (url: string, _params?: Record<string, unknown>): void {
     url = this.handleScanUrl(url)
     if (this.isTab(url)) {
       mpx.switchTab({
@@ -39,16 +49,16 @@ export default class WxUtils {
     }
   }
 
-  static wxPay (param) {
+  static wxPay (param: PaymentParams): Promise<PaymentResult> {
     return new Promise((resolve, reject) => {
-      param.complete = res => {
-        if (res.errMsg.toLocaleLowerCase() === 'requestPayment:ok'.toLocaleLowerCase()) {
-          resolve(res)
+      param.complete = result => {
+        if (String(result.errMsg || '').toLocaleLowerCase() === 'requestPayment:ok'.toLocaleLowerCase()) {
+          resolve(result)
         } else {
-          reject(res)
+          reject(result)
         }
       }
-      mpx.requestPayment(param)
+      ;(mpx as any).requestPayment(param)
     })
   }
 }

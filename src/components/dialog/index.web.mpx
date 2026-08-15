@@ -13,47 +13,62 @@
   </view>
 </template>
 
-<script>
-import { createComponent } from '@mpxjs/core'
+<script lang="ts">
+import { createComponent, ref, watch } from '@mpxjs/core'
 
-const noop = () => {}
+interface DialogOptions {
+  title?: string
+  content?: string
+  btnText?: string
+}
+
+interface DialogState {
+  title: string
+  content: string
+  btnText: string
+  resolve: () => void
+}
 
 createComponent({
   properties: {
     visible: {
       type: Boolean,
       value: false,
-      observer (newValue) {
-        this.show = newValue
-      }
     }
   },
-  data: {
-    show: false,
-    dialog: {
+  setup (props) {
+    const show = ref(props.visible)
+    const noop = (): void => {}
+    const dialog = ref<DialogState>({
       title: '登录小程序',
       content: '请在微信小程序中完成登录。',
       btnText: '知道了',
       resolve: noop
-    }
-  },
-  methods: {
-    open (options = {}) {
+    })
+
+    watch(() => props.visible, value => {
+      show.value = value
+    }, { immediate: true })
+
+    const open = (options: DialogOptions = {}): Promise<void> => {
       const {
         title = '登录小程序',
         content = '请在微信小程序中完成登录。',
         btnText = '知道了'
       } = options
       return new Promise(resolve => {
-        this.dialog = { title, content, btnText, resolve }
-        this.show = true
+        dialog.value = { title, content, btnText, resolve }
+        show.value = true
       })
-    },
-    close () {
-      const resolve = this.dialog.resolve || noop
-      this.show = false
-      resolve({})
     }
+
+    const close = (): void => {
+      const resolve = dialog.value.resolve || noop
+      show.value = false
+      resolve()
+    }
+
+    return { show, dialog, open, close }
   }
 })
 </script>

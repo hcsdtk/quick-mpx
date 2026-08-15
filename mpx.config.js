@@ -1,4 +1,5 @@
 const path = require('path')
+const MpxUnocssPlugin = require('@mpxjs/unocss-plugin').default
 
 module.exports = {
   // Keep each target self-contained so the generated directory can be opened
@@ -8,6 +9,9 @@ module.exports = {
     performance: {
       hints: false
     }
+  },
+  chainWebpack: config => {
+    config.plugin('mpx-unocss-plugin').use(MpxUnocssPlugin, [{}])
   },
   pluginOptions: {
     mpx: {

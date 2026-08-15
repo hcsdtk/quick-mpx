@@ -1,11 +1,17 @@
-<script>
+<script lang="ts">
 import mpx, { createApp } from '@mpxjs/core'
 import apiProxy from '@mpxjs/api-proxy'
+import { createPinia } from '@mpxjs/pinia'
 import './helper/mpxHelper'
 
 mpx.use(apiProxy, { usePromise: true })
 
 createApp({
+  onAppInit () {
+    return {
+      pinia: createPinia()
+    }
+  },
   onLaunch (options) {
     console.log('app onLaunch', options)
   }

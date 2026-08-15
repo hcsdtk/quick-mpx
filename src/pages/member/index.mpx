@@ -1,11 +1,15 @@
 <template>
-  <view class="page"> </view>
+  <view class="page bg-white"> </view>
 </template>
 
-<script>
+<script lang="ts">
 import { createPage } from '@mpxjs/core'
 
-createPage({})
+createPage({
+  setup () {
+    return {}
+  }
+})
 </script>
 
 <style lang="stylus"></style>

@@ -1,23 +1,23 @@
 import mpx from '@mpxjs/core'
 
 export default {
-  get (key) {
-    const data = mpx.getStorageSync(key)
+  get<T = unknown> (key: string): T | undefined {
+    const data = mpx.getStorageSync(key) as T | string | undefined
     if (typeof data !== 'string') {
       return data
     }
 
     try {
-      return JSON.parse(data)
+      return JSON.parse(data) as T
     } catch (error) {
-      return data
+      return data as T
     }
   },
-  set (key, data) {
+  set<T> (key: string, data: T): void {
     const value = typeof data === 'string' ? data : JSON.stringify(data)
     mpx.setStorageSync(key, value)
   },
-  remove (key) {
+  remove (key: string): void {
     mpx.removeStorageSync(key)
   }
 }

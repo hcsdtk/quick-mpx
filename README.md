@@ -2,6 +2,8 @@
 
 一个基于 Mpx 2.11 的跨端商城小程序示例，源码以微信小程序为基准，同时支持支付宝小程序和 Web 构建。
 
+项目使用 TypeScript、Composition API、Pinia 和 UnoCSS，业务代码尽量保持跨端，平台差异通过 Mpx 文件后缀隔离。
+
 ## 环境要求
 
 - Node.js `>=18.18.0`
@@ -66,17 +68,28 @@ npm run verify
 npm run clean
 ```
 
-`verify` 会依次执行 ESLint 和微信生产构建。依赖版本由 `package-lock.json` 锁定，日常安装请使用 `npm ci`。
+`verify` 会依次执行 ESLint、TypeScript 类型检查和微信生产构建。依赖版本由 `package-lock.json` 锁定，日常安装请使用 `npm ci`。
+
+完整检查还包括 TypeScript 类型检查：
+
+```bash
+npm run typecheck
+npm run verify
+```
 
 ## 配置约定
 
 - `mpx.config.js`：Mpx CLI、Webpack 5、跨端输出和 rpx 转换配置。
+- `uno.config.js`：Mpx 官方 UnoCSS preset 配置；构建时会按页面实际使用的工具类生成平台样式。
+- `tsconfig.json`：TypeScript 严格检查配置。
 - `src/`：页面、组件、状态管理、请求封装和静态资源。
 - `static/<target>/`：各平台需要复制到构建产物的开发者工具配置。
 - `.env.local`：本地 API 地址，不提交到仓库；示例见 `.env.example`。
 - `dist/`：构建产物，已加入 `.gitignore`。
 
 业务代码统一通过 `@mpxjs/core` 暴露的 `mpx` API 调用平台能力，并由 `@mpxjs/api-proxy` 负责跨平台适配。微信专属组件差异使用 `.web.mpx` 等平台文件后缀隔离，避免在非微信目标中引入不支持的属性。
+
+状态管理使用 `@mpxjs/pinia` 的 setup store，应用入口在 `onAppInit` 中创建 Pinia 实例。Mpx 的 Composition API 与 Vue 3 的 API 形态相近，但生命周期和组件注册仍遵循 Mpx 运行时约定；新增页面或组件时请优先使用 `<script lang="ts">` 与 `setup`。
 
 ## 许可证
 
