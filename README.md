@@ -16,6 +16,8 @@ cp .env.example .env.local
 npm run serve
 ```
 
+`npm run watch` 是 `npm run serve` 的兼容别名，旧项目中的开发命令可以继续使用。
+
 开发构建默认输出到 `dist/wx`。在微信开发者工具中打开 `dist/wx` 即可预览；项目根目录的 `project.config.json` 已配置好该目录。
 
 生产构建：
@@ -42,6 +44,17 @@ npm run build:web
 # 一次输出微信、支付宝和 Web
 npm run serve:cross
 npm run build:cross
+```
+
+升级前的常用命令仍保留兼容入口：
+
+```bash
+npm run watch              # 开发模式
+npm run watch:web          # Web 开发模式
+npm run watch:cross        # 微信、支付宝、Web 开发模式
+npm run watch:prod         # 生产模式持续构建
+npm run build:dev          # 开发模式单次构建
+npm run build:dev:cross    # 开发模式跨端单次构建
 ```
 
 ## 常用检查
