@@ -1,15 +1,12 @@
-// 做一些公用页面的事情 比如方法
-
 import mpx from '@mpxjs/core'
+import WxUtils from '../utils/WxUtils'
 
 mpx.mixin({
-  data: {
-    mixins: {
-      shit: '你好'
+  tapNavTo (event) {
+    const currentTarget = event && event.currentTarget
+    const url = currentTarget && currentTarget.dataset && currentTarget.dataset.url
+    if (url) {
+      WxUtils.navigate(url)
     }
-  },
-  methods: {},
-  tapNavTo (e) {
-    console.log(e)
   }
 })

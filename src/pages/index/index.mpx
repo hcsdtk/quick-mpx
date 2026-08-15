@@ -1,5 +1,5 @@
 <template>
-  <dialog openType="getUserInfo" id="loginDialog"></dialog>
+  <dialog id="loginDialog"></dialog>
   <view class="page white">
     <view class="index-banner">
       <image class="banner-img" lazy-load src="{{ indexInfo.banner }}"></image>
@@ -56,7 +56,6 @@
         class="index-banner-list-item"
         bindtap="{{ item.link ? 'tapNavTo' : '' }}"
         data-url="/{{ item.link }}"
-        data-banner="{{ banner }}"
         wx:for="{{ indexInfo.list }}"
         wx:key="banner"
       >
@@ -67,7 +66,7 @@
 </template>
 
 <script>
-import { createPage } from '@mpxjs/core'
+import mpx, { createPage } from '@mpxjs/core'
 import IndexApi from '../../api/Index'
 import WxUtils from '../../utils/WxUtils'
 
@@ -90,21 +89,29 @@ createPage({
         console.log(e)
       })
   },
-  toScan() {
-    const self = this
-    wx.scanCode({
-      onlyFromCamera: true,
-      success: res => {
-        if (res.path) {
-          WxUtils.navigate(res.path)
-          return false
-        }
-        self.showDialog({
-          title: `温馨提示`,
-          content: `虽然你不是扫描'好色派沙拉桌号'，但是我还是告诉你，你这次扫描的内容是:${res.result}`,
-        })
-      },
-    })
+  showDialog(options) {
+    const dialog = this.selectComponent('#loginDialog')
+    if (!dialog) {
+      return Promise.reject(new Error('登录弹窗尚未挂载'))
+    }
+    return dialog.open(options)
+  },
+  async toScan() {
+    try {
+      const res = await mpx.scanCode({ onlyFromCamera: true })
+      if (res.path) {
+        return WxUtils.navigate(res.path)
+      }
+      return this.showDialog({
+        title: '温馨提示',
+        content: `虽然你不是扫描“好色派沙拉桌号”，但是我还是告诉你，你这次扫描的内容是：${res.result}`
+      })
+    } catch (error) {
+      // 用户主动取消扫码时不需要打扰；其他错误保留日志便于排查。
+      if (!error || !String(error.errMsg || '').includes('cancel')) {
+        console.error('扫码失败', error)
+      }
+    }
   },
 })
 </script>
@@ -191,11 +198,8 @@ createPage({
 {
   "navigationBarTitleText": "权味+",
   "navigationBarBackgroundColor": "#ffffff",
-  "navigationBarTextStyle": "black",
   "backgroundColor": "#ffffff",
-  "backgroundTextStyle": "dark",
   "enablePullDownRefresh": false,
-  "disableScroll": false,
   "usingComponents": {
     "dialog": "../../components/dialog/index"
   }

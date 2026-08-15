@@ -1,82 +1,70 @@
-/* eslint-disable no-unexpected-multiline */
-/* eslint-disable no-undef */
+/* global getCurrentPages */
+
+import mpx from '@mpxjs/core'
 import store from '../store/user'
 import Config from '../config'
 
+let refreshingToken
+
 class Token {
   static requestToken (url, data) {
-    return new Promise((resolve, reject) => {
-      wx.request({
-        url: Config.apiUrl + url,
-        data: data,
-        method: 'POST',
-        success: res => {
-          resolve(res.data)
-        },
-        fail: e => {}
-      })
-    })
+    return mpx.request({
+      url: Config.apiUrl + url,
+      data,
+      method: 'POST'
+    }).then(response => response.data)
   }
 
-  static refreshToken () {
-    return new Promise((resolve, reject) => {
-      const wxParams = {}
-      wx.login({
-        success: res => {
-          wxParams.code = res.code
-          this.getUserInfo().then(result => {
-            wxParams.encryptedData = result.encryptedData
-            wxParams.iv = result.iv
-            wxParams.userInfo = result.userInfo
-            store.dispatch('modifyUserInfo', result.userInfo)
-            this.requestToken('/plan/login/miniAppsLogin', wxParams).then(res => {
-              resolve(res)
-            })
-          })
-        }
-      })
-    })
+  static async refreshToken () {
+    const loginResult = await mpx.login()
+    const userResult = await this.getUserInfo()
+    const params = {
+      code: loginResult.code,
+      encryptedData: userResult.encryptedData,
+      iv: userResult.iv,
+      userInfo: userResult.userInfo
+    }
+
+    if (userResult.userInfo) {
+      await store.dispatch('modifyUserInfo', userResult.userInfo)
+    }
+    return this.requestToken('/plan/login/miniAppsLogin', params)
   }
 
-  static getUserInfo () {
-    return new Promise((resolve, reject) => {
-      wx.getSetting({
-        success: res => {
-          if (res.authSetting['scope.userInfo']) {
-            // 已经授权，可以直接调用 getUserInfo 获取头像昵称，不会弹框
-            wx.getUserInfo({
-              success: result => {
-                resolve(result)
-              }
-            })
-          } else {
-            getCurrentPages()
-              [getCurrentPages().length - 1].selectComponent('#loginDialog')
-              .open()
-              .then(result => {
-                resolve(result)
-              })
-          }
-        }
-      })
-    })
+  static async getUserInfo () {
+    const setting = await mpx.getSetting()
+    if (setting.authSetting && setting.authSetting['scope.userInfo']) {
+      return mpx.getUserInfo()
+    }
+
+    const pages = getCurrentPages()
+    const currentPage = pages[pages.length - 1]
+    const dialog = currentPage && currentPage.selectComponent('#loginDialog')
+    if (!dialog) {
+      throw new Error('登录弹窗尚未挂载')
+    }
+    return dialog.open()
   }
 
   static getToken () {
-    return new Promise(resolve => {
-      if (store.getters.checkTokenExpire) {
-        this.refreshToken().then(res => {
+    if (!store.getters.checkTokenExpire) {
+      return Promise.resolve(store.getters.token)
+    }
+
+    if (!refreshingToken) {
+      refreshingToken = this.refreshToken()
+        .then(result => {
           const data = {
-            token: res.data.member_id,
+            token: result.data.member_id,
             expire_time: -1
           }
-          store.dispatch('modifyLoginInfo', data)
-          resolve(data.token)
+          return store.dispatch('modifyLoginInfo', data).then(() => data.token)
         })
-      } else {
-        resolve(store.getters.token)
-      }
-    })
+        .finally(() => {
+          refreshingToken = undefined
+        })
+    }
+    return refreshingToken
   }
 }
 

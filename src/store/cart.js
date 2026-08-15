@@ -1,4 +1,4 @@
-import { createStore } from '@mpxjs/core'
+import { createStore } from '@mpxjs/store'
 
 const CartStore = createStore({
   state: {
@@ -6,7 +6,7 @@ const CartStore = createStore({
   },
   getters: {
     cartInfo: state => {
-      let info = {
+      const info = {
         price: 0,
         num: 0
       }
@@ -19,20 +19,24 @@ const CartStore = createStore({
   },
   mutations: {
     add (state, payload) {
-      if (payload.index === undefined) {
-        payload.index = state.list.findIndex(item => {
-          return item.id === payload.goods.id
-        })
-      }
-      if (payload.goods.num === 0) {
-        state.list.splice(payload.index, 1)
+      const goods = payload && payload.goods
+      if (!goods) {
         return false
       }
-      if (payload.index === -1) {
-        state.list.push(payload.goods)
+
+      const index = payload.index === undefined
+        ? state.list.findIndex(item => item.id === goods.id)
+        : payload.index
+
+      if (goods.num <= 0) {
+        if (index > -1) state.list.splice(index, 1)
+        return false
+      }
+      if (index === -1) {
+        state.list.push(goods)
       } else {
-        let cartObject = JSON.parse(JSON.stringify(state.list))
-        cartObject[payload.index].num = payload.goods.num
+        const cartObject = JSON.parse(JSON.stringify(state.list))
+        cartObject[index].num = goods.num
         state.list = cartObject
       }
     }

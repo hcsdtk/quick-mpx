@@ -6,12 +6,7 @@
       <text>{{ dialog.content }}</text>
     </view>
     <view class="dialog-footer">
-      <button
-        class="button button-big button-circle"
-        open-type="getUserInfo"
-        bindgetuserinfo="bindgetuserinfo"
-        hover-class="button-hover"
-      >
+      <button class="button button-big button-circle" bindtap="close">
         {{ dialog.btnText }}
       </button>
     </view>
@@ -21,15 +16,15 @@
 <script>
 import { createComponent } from '@mpxjs/core'
 
-const _f = () => {}
+const noop = () => {}
+
 createComponent({
   properties: {
     visible: {
-      //用于外部控制组件显示和隐藏
       type: Boolean,
       value: false,
-      observer(newVal) {
-        this.show = newVal
+      observer (newValue) {
+        this.show = newValue
       }
     }
   },
@@ -37,40 +32,27 @@ createComponent({
     show: false,
     dialog: {
       title: '登录小程序',
-      content: `等你好久了！\r\n欢迎来到权味+小程序。`,
-      btnText: '登录权味+',
-      resolve: _f,
-      reject: _f
+      content: '请在微信小程序中完成登录。',
+      btnText: '知道了',
+      resolve: noop
     }
   },
   methods: {
-    open(options = {}) {
+    open (options = {}) {
       const {
         title = '登录小程序',
-        content = `等你好久了！\r\n欢迎来到权味+小程序。`,
-        btnText = '登录权味+'
+        content = '请在微信小程序中完成登录。',
+        btnText = '知道了'
       } = options
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
+        this.dialog = { title, content, btnText, resolve }
         this.show = true
-        this.dialog = {
-          title,
-          content,
-          btnText,
-          resolve,
-          reject
-        }
       })
     },
-    bindgetuserinfo(e) {
-      const dialogData = this.dialog || {}
-      const { resolve = _f, reject = _f } = dialogData
-      const detail = e.detail || {}
+    close () {
+      const resolve = this.dialog.resolve || noop
       this.show = false
-      if (String(detail.errMsg || '').endsWith(':ok')) {
-        resolve(e.detail)
-      } else {
-        reject(detail)
-      }
+      resolve({})
     }
   }
 })
@@ -113,6 +95,7 @@ createComponent({
     & .button
       width 100%
 </style>
+
 <script type="application/json">
 {
   "usingComponents": {

@@ -1,11 +1,10 @@
-const config = {
-  isOnline: process.env.NODE_ENV === 'production',
-  apiUrl: 'https://plan.haosesalad.com',
-  httpCode: {
-    success: 0,
-  },
-}
+/* global process */
 
-config.apiUrl = config.isOnline ? 'https://plan.haosesalad.com' : config.apiUrl //不准修改
+const config = {
+  apiUrl: process.env.VUE_APP_API_URL || 'https://plan.haosesalad.com',
+  httpCode: {
+    success: 0
+  }
+}
 
 export default config

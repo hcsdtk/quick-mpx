@@ -1,3 +1,5 @@
+import mpx from '@mpxjs/core'
+
 export default class WxUtils {
   static get tabUrls () {
     return ['/pages/index/index', '/pages/member/index', '/pages/mine/index', '/pages/order/index']
@@ -14,11 +16,11 @@ export default class WxUtils {
   static redirect (url) {
     url = this.handleScanUrl(url)
     if (this.isTab(url)) {
-      wx.switchTab({
+      mpx.switchTab({
         url: url
       })
     } else {
-      wx.redirectTo({
+      mpx.redirectTo({
         url: url
       })
     }
@@ -27,11 +29,11 @@ export default class WxUtils {
   static navigate (url, params) {
     url = this.handleScanUrl(url)
     if (this.isTab(url)) {
-      wx.switchTab({
+      mpx.switchTab({
         url: url
       })
     } else {
-      wx.navigateTo({
+      mpx.navigateTo({
         url: url
       })
     }
@@ -46,7 +48,7 @@ export default class WxUtils {
           reject(res)
         }
       }
-      wx.requestPayment(param)
+      mpx.requestPayment(param)
     })
   }
 }

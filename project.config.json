@@ -17,7 +17,6 @@
 	"appid": "wx383220d5552a01dc",
 	"projectname": "quick-mpx-weapp-mall",
 	"description": "A mpx project",
-	"libVersion": "2.4.2",
 	"simulatorType": "wechat",
 	"simulatorPluginLibVersion": {},
 	"condition": {}

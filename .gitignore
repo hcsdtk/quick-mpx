@@ -5,4 +5,7 @@ npm-debug.log
 deploy/
 output/
 dist/
+.cache/
+.env.local
+.env.*.local
 .vscode/

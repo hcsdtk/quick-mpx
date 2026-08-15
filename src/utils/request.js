@@ -7,22 +7,24 @@ import Token from '../api/Token'
 mpx.use(mpxFetch)
 
 // 请求拦截器
-mpx.xfetch.interceptors.request.use(function (config) {
-  console.log(config)
-  return new Promise((resolve, reject) => {
-    Token.getToken().then(res => {
-      if (res) {
-        config.header = {
-          Authorization: res
-        }
-        config.data.member_id = res
-        config.data.bigVersion = 'v3'
-        config.data.version = '3.1.1.8'
-        config.data.scene = 1001
-        resolve(config)
-      }
-    })
-  })
+mpx.xfetch.interceptors.request.use(async config => {
+  const token = await Token.getToken()
+  if (!token) {
+    return config
+  }
+
+  config.header = {
+    ...config.header,
+    Authorization: token
+  }
+  config.data = {
+    ...config.data,
+    member_id: token,
+    bigVersion: 'v3',
+    version: '3.1.1.8',
+    scene: 1001
+  }
+  return config
 })
 
 // 处理后台返回数据
@@ -49,7 +51,7 @@ function handlerResponseData (response) {
     }
     result.serverCode = data.code
     result.serverMsg = data.msg || `服务器繁忙，请稍后重试`
-    result.serverData = data.data
+    result.serverData = data.data || {}
   }
   return result
 }
@@ -73,7 +75,7 @@ mpx.xfetch.interceptors.response.use(interceptorsResponse)
 
 const request = {
   done (url, data = {}, type = 'get') {
-    url = url.indexOf('https') === -1 ? Config.apiUrl + url : url
+    url = /^https?:\/\//.test(url) ? url : Config.apiUrl + url
     return mpx.xfetch.fetch({
       url: url,
       method: type,

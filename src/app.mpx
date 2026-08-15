@@ -1,14 +1,14 @@
 <script>
-import './helper/mpxHelper'
 import mpx, { createApp } from '@mpxjs/core'
 import apiProxy from '@mpxjs/api-proxy'
+import './helper/mpxHelper'
 
 mpx.use(apiProxy, { usePromise: true })
-// app.js
+
 createApp({
-  onLaunch(options) {
-    console.log(`app onLaunch`, options)
-  },
+  onLaunch (options) {
+    console.log('app onLaunch', options)
+  }
 })
 </script>
 
@@ -27,14 +27,11 @@ createApp({
   "window": {
     "navigationBarTitleText": "权味",
     "navigationBarBackgroundColor": "#ffffff",
-    "navigationBarTextStyle": "black",
-    "backgroundTextStyle": "dark",
     "backgroundColor": "#F8F9FB"
   },
   "tabBar": {
     "color": "#979797",
     "selectedColor": "#000000",
-    "borderStyle": "black",
     "backgroundColor": "#fff",
     "list": [
       {
@@ -62,11 +59,6 @@ createApp({
         "text": "我的"
       }
     ]
-  },
-  "debug": true,
-  "networkTimeout": {
-    "request": 10000,
-    "downloadFile": 30000
   }
 }
 </script>

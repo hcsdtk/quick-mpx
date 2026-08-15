@@ -1,4 +1,4 @@
-import { createStore } from '@mpxjs/core'
+import { createStore } from '@mpxjs/store'
 import storage from '../utils/storage'
 
 const UserStore = createStore({

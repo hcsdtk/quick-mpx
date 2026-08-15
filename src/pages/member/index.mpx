@@ -4,11 +4,8 @@
 
 <script>
 import { createPage } from '@mpxjs/core'
-createPage({
-  methods: {},
-  onLoad() {},
-  onShow() {},
-})
+
+createPage({})
 </script>
 
 <style lang="stylus"></style>
@@ -16,11 +13,8 @@ createPage({
 {
   "navigationBarTitleText": "会员",
   "navigationBarBackgroundColor": "#ffffff",
-  "navigationBarTextStyle": "black",
   "backgroundColor": "#ffffff",
-  "backgroundTextStyle": "dark",
   "enablePullDownRefresh": false,
-  "disableScroll": false,
   "usingComponents": {}
 }
 </script>

@@ -1,26 +1,23 @@
+import mpx from '@mpxjs/core'
+
 export default {
   get (key) {
-    let data = wx.getStorageSync(key)
-    if (
-      typeof data === 'string' &&
-      data.indexOf('{') !== -1 &&
-      data.indexOf('}') !== -1 &&
-      data.indexOf(':') !== -1
-    ) {
-      data = JSON.parse(data)
+    const data = mpx.getStorageSync(key)
+    if (typeof data !== 'string') {
+      return data
     }
-    return data
+
+    try {
+      return JSON.parse(data)
+    } catch (error) {
+      return data
+    }
   },
   set (key, data) {
-    if (data instanceof Object) {
-      data = JSON.stringify(data)
-    }
-    if (data instanceof Array && String(data).indexOf('object')) {
-      data = JSON.stringify(data)
-    }
-    wx.setStorageSync(key, data)
+    const value = typeof data === 'string' ? data : JSON.stringify(data)
+    mpx.setStorageSync(key, value)
   },
   remove (key) {
-    wx.removeStorageSync(key)
+    mpx.removeStorageSync(key)
   }
 }
