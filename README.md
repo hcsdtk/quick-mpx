@@ -1,95 +1,170 @@
 # quick-mpx-weapp-mall
 
-一个基于 Mpx 2.11 的跨端商城小程序示例，源码以微信小程序为基准，同时支持支付宝小程序和 Web 构建。
+[![CI](https://github.com/hcsdtk/quick-mpx/actions/workflows/ci.yml/badge.svg)](https://github.com/hcsdtk/quick-mpx/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
 
-项目使用 TypeScript、Composition API、Pinia 和 UnoCSS，业务代码尽量保持跨端，平台差异通过 Mpx 文件后缀隔离。
+一个基于 [Mpx](https://mpxjs.cn/) 2.11 的跨端商城示例项目。源码以微信小程序为基准，同时支持微信小程序、支付宝小程序和 Web 构建。
+
+项目适合作为 Mpx 跨端项目的起始模板，包含以下工程能力：
+
+- TypeScript 严格类型检查
+- Mpx Composition API
+- 官方 `@mpxjs/pinia` 状态管理
+- 官方 Mpx UnoCSS preset 和跨端样式生成
+- 微信、支付宝、Web 三端构建
+- ESLint、TypeScript 和 GitHub Actions CI
+
+> Mpx 的 Composition API 与 Vue 3 API 形态相近，但项目运行时仍然是 Mpx。页面和组件应遵循 Mpx 的生命周期、组件注册和平台文件约定。
 
 ## 环境要求
 
-- Node.js `>=18.18.0`
+- Node.js `>=18.18.0`，CI 使用 Node.js 20
 - npm `>=9`
-- 微信开发者工具（预览微信产物时）
+- 微信开发者工具（仅在预览微信产物时需要）
+- 支付宝小程序开发工具（仅在预览支付宝产物时需要）
 
 ## 快速开始
 
 ```bash
+git clone https://github.com/hcsdtk/quick-mpx.git
+cd quick-mpx
 npm ci
 cp .env.example .env.local
 npm run serve
 ```
 
-`npm run watch` 是 `npm run serve` 的兼容别名，旧项目中的开发命令可以继续使用。
-
 开发构建默认输出到 `dist/wx`。在微信开发者工具中打开 `dist/wx` 即可预览；项目根目录的 `project.config.json` 已配置好该目录。
 
-生产构建：
+`.env.local` 不提交到仓库。最小配置如下：
 
-```bash
-npm run build
+```dotenv
+VUE_APP_API_URL=https://plan.haosesalad.com
 ```
 
-## 构建目标
+## 开发与构建
+
+### 开发模式
 
 ```bash
-# 微信小程序
-npm run serve
-npm run build
+npm run serve              # 微信小程序
+npm run serve:ali          # 支付宝小程序
+npm run serve:web          # Web
+npm run serve:cross        # 微信、支付宝、Web
+```
 
-# 支付宝小程序
-npm run serve:ali
-npm run build:ali
+`watch`、`watch:web`、`watch:cross` 是兼容旧项目的开发命令别名。
+`watch:prod` 和 `watch:prod:cross` 用于生产模式持续构建。
 
-# Web
-npm run serve:web
-npm run build:web
+### 生产构建
 
-# 一次输出微信、支付宝和 Web
-npm run serve:cross
+```bash
+npm run build              # 微信小程序
+npm run build:ali          # 支付宝小程序
+npm run build:web          # Web
+npm run build:cross        # 微信、支付宝、Web
+```
+
+### 开发模式单次构建
+
+```bash
+npm run build:dev
+npm run build:dev:cross
+```
+
+产物按目标写入 `dist/`，不会提交到 Git：
+
+```text
+dist/
+├── wx/
+├── ali/
+└── web/
+```
+
+### 检查与清理
+
+```bash
+npm run lint              # ESLint
+npm run typecheck         # TypeScript
+npm run verify            # lint + typecheck + 微信生产构建
+npm run clean             # 删除 dist 和缓存
+```
+
+CI 会执行 `npm ci`、`npm run lint`、`npm run typecheck` 和 `npm run build:cross`。
+
+## 项目结构
+
+```text
+src/
+├── api/                  # API 请求和登录接口
+├── app.mpx               # 应用入口、跨端插件和 Pinia 初始化
+├── components/           # 可复用 Mpx 组件及平台变体
+├── config/               # 应用配置
+├── helper/               # Mpx 全局辅助能力
+├── pages/                # 页面入口
+├── store/                # Pinia setup stores
+├── utils/                # 请求、存储和平台能力封装
+└── assets/               # 图片和 Stylus 样式
+
+mpx.config.js             # Mpx CLI、Webpack 和跨端输出配置
+uno.config.js             # UnoCSS preset 配置
+tsconfig.json             # TypeScript 严格检查配置
+static/<target>/          # 各平台开发者工具配置
+```
+
+## 编码约定
+
+### 页面和组件
+
+页面、组件的业务脚本统一使用 TypeScript 和 Mpx Composition API：
+
+```mpx
+<script lang="ts">
+import { createPage, ref } from '@mpxjs/core'
+
+createPage({
+  setup () {
+    const count = ref(0)
+    return { count }
+  }
+})
+</script>
+```
+
+新增页面或组件时优先使用 `<script lang="ts">` 和 `setup`。当前项目不使用 Vue 3 的 `script setup` 假设，避免把 Vue 3 专属编译宏带入 Mpx 工程。
+
+### 状态管理
+
+状态管理使用官方 `@mpxjs/pinia` setup store：
+
+- `src/store/user.ts`：登录信息、用户信息和 token 过期判断
+- `src/store/cart.ts`：购物车商品和金额统计
+- `src/app.mpx`：在 `onAppInit` 中创建并注入 Pinia
+
+### 跨端差异
+
+业务代码应优先使用 `@mpxjs/core` 和 `@mpxjs/api-proxy` 的跨端能力。只有在平台 API 或模板确实存在差异时，才使用 `.web.mpx` 等平台文件后缀隔离实现。
+
+UnoCSS 由 `@mpxjs/unocss-base` 和 `@mpxjs/unocss-plugin` 负责跨端转换，构建时会生成对应平台的样式文件，例如 `styles/uno.wxss` 和 `styles/uno.acss`。
+
+## 开源协作
+
+提交修改前请运行：
+
+```bash
+npm ci
+npm run lint
+npm run typecheck
 npm run build:cross
 ```
 
-升级前的常用命令仍保留兼容入口：
+推荐工作流：
 
-```bash
-npm run watch              # 开发模式
-npm run watch:web          # Web 开发模式
-npm run watch:cross        # 微信、支付宝、Web 开发模式
-npm run watch:prod         # 生产模式持续构建
-npm run build:dev          # 开发模式单次构建
-npm run build:dev:cross    # 开发模式跨端单次构建
-```
+1. 从 `dev` 创建功能分支。
+2. 保持提交聚焦，并同步更新必要的文档。
+3. 在提交 Pull Request 前通过上述检查。
+4. `master` 用于稳定代码，`dev` 用于日常集成。
 
-## 常用检查
-
-```bash
-npm run lint
-npm run lint:fix
-npm run verify
-npm run clean
-```
-
-`verify` 会依次执行 ESLint、TypeScript 类型检查和微信生产构建。依赖版本由 `package-lock.json` 锁定，日常安装请使用 `npm ci`。
-
-完整检查还包括 TypeScript 类型检查：
-
-```bash
-npm run typecheck
-npm run verify
-```
-
-## 配置约定
-
-- `mpx.config.js`：Mpx CLI、Webpack 5、跨端输出和 rpx 转换配置。
-- `uno.config.js`：Mpx 官方 UnoCSS preset 配置；构建时会按页面实际使用的工具类生成平台样式。
-- `tsconfig.json`：TypeScript 严格检查配置。
-- `src/`：页面、组件、状态管理、请求封装和静态资源。
-- `static/<target>/`：各平台需要复制到构建产物的开发者工具配置。
-- `.env.local`：本地 API 地址，不提交到仓库；示例见 `.env.example`。
-- `dist/`：构建产物，已加入 `.gitignore`。
-
-业务代码统一通过 `@mpxjs/core` 暴露的 `mpx` API 调用平台能力，并由 `@mpxjs/api-proxy` 负责跨平台适配。微信专属组件差异使用 `.web.mpx` 等平台文件后缀隔离，避免在非微信目标中引入不支持的属性。
-
-状态管理使用 `@mpxjs/pinia` 的 setup store，应用入口在 `onAppInit` 中创建 Pinia 实例。Mpx 的 Composition API 与 Vue 3 的 API 形态相近，但生命周期和组件注册仍遵循 Mpx 运行时约定；新增页面或组件时请优先使用 `<script lang="ts">` 与 `setup`。
+Bug 或功能建议请提交 [GitHub Issue](https://github.com/hcsdtk/quick-mpx/issues)，代码修改请提交 Pull Request，并说明变更范围和验证方式。
 
 ## 许可证
 
