@@ -1,70 +1,70 @@
-<script>
-  import "./helper/mpxHelper"
+<script lang="ts">
+import mpx, { createApp } from '@mpxjs/core'
+import apiProxy from '@mpxjs/api-proxy'
+import { createPinia } from '@mpxjs/pinia'
+import './helper/mpxHelper'
 
-  App({
-    onLaunch() {
-    },
-    onShow(options) {
-      console.log(options)
+mpx.use(apiProxy, { usePromise: true })
+
+createApp({
+  onAppInit () {
+    return {
+      pinia: createPinia()
     }
-  })
+  },
+  onLaunch (options) {
+    console.log('app onLaunch', options)
+  }
+})
 </script>
 
 <style lang="stylus">
-  @import "./assets/stylus/base"
+@import "./assets/stylus/base"
 </style>
 
 <script type="application/json">
-  {
-    "pages": [
-      "./pages/index/index",
-      "./pages/member/index",
-      "./pages/order/index",
-      "./pages/mine/index"
-    ],
-    "window": {
-      "navigationBarTitleText": "权味",
-      "navigationBarBackgroundColor": "#ffffff",
-      "navigationBarTextStyle": "black",
-      "backgroundTextStyle": "dark",
-      "backgroundColor": "#F8F9FB"
-    },
-    "tabBar": {
-      "color": "#979797",
-      "selectedColor": "#000000",
-      "borderStyle": "black",
-      "backgroundColor": "#fff",
-      "list": [
-        {
-          "iconPath": "./assets/images/ic_tab1.png?fallback",
-          "selectedIconPath": "./assets/images/ic_tab1_active.png?fallback",
-          "pagePath": "pages/index/index",
-          "text": "点餐"
-        },
-        {
-          "iconPath": "./assets/images/ic_tab3.png?fallback",
-          "selectedIconPath": "./assets/images/ic_tab3_active.png?fallback",
-          "pagePath": "pages/member/index",
-          "text": "会员"
-        },
-        {
-          "iconPath": "./assets/images/ic_tab2.png?fallback",
-          "selectedIconPath": "./assets/images/ic_tab2_active.png?fallback",
-          "pagePath": "pages/order/index",
-          "text": "订单"
-        },
-        {
-          "iconPath": "./assets/images/ic_tab4.png?fallback",
-          "selectedIconPath": "./assets/images/ic_tab4_active.png?fallback",
-          "pagePath": "pages/mine/index",
-          "text": "我的"
-        }
-      ]
-    },
-    "debug": true,
-    "networkTimeout": {
-      "request": 10000,
-      "downloadFile": 30000
-    }
+{
+  "pages": [
+    "./pages/index/index",
+    "./pages/member/index",
+    "./pages/order/index",
+    "./pages/mine/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "权味",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#F8F9FB"
+  },
+  "tabBar": {
+    "color": "#979797",
+    "selectedColor": "#000000",
+    "backgroundColor": "#fff",
+    "list": [
+      {
+        "iconPath": "./assets/images/ic_tab1.png?fallback",
+        "selectedIconPath": "./assets/images/ic_tab1_active.png?fallback",
+        "pagePath": "pages/index/index",
+        "text": "点餐"
+      },
+      {
+        "iconPath": "./assets/images/ic_tab3.png?fallback",
+        "selectedIconPath": "./assets/images/ic_tab3_active.png?fallback",
+        "pagePath": "pages/member/index",
+        "text": "会员"
+      },
+      {
+        "iconPath": "./assets/images/ic_tab2.png?fallback",
+        "selectedIconPath": "./assets/images/ic_tab2_active.png?fallback",
+        "pagePath": "pages/order/index",
+        "text": "订单"
+      },
+      {
+        "iconPath": "./assets/images/ic_tab4.png?fallback",
+        "selectedIconPath": "./assets/images/ic_tab4_active.png?fallback",
+        "pagePath": "pages/mine/index",
+        "text": "我的"
+      }
+    ]
   }
+}
 </script>

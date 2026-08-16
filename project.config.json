@@ -1,17 +1,23 @@
 {
-	"miniprogramRoot": "dist/",
+	"miniprogramRoot": "dist/wx/",
 	"compileType": "miniprogram",
 	"setting": {
 		"urlCheck": false,
 		"es6": true,
 		"postcss": true,
+		"preloadBackgroundData": false,
 		"minified": true,
 		"newFeature": true,
-		"autoAudits": false
+		"autoAudits": false,
+		"coverView": true,
+		"showShadowRootInWxmlPanel": true,
+		"scopeDataCheck": false,
+		"useCompilerModule": true
 	},
-	"appid": "wxc7ea4bf8111e255c",
+	"appid": "wx383220d5552a01dc",
 	"projectname": "quick-mpx-weapp-mall",
 	"description": "A mpx project",
-	"libVersion": "2.4.2",
+	"simulatorType": "wechat",
+	"simulatorPluginLibVersion": {},
 	"condition": {}
 }

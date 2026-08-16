@@ -1,4 +1,4 @@
-@import "./constant"
+@import './constant'
 .button
   box-sizing border-box
   display flex
@@ -25,78 +25,51 @@
   margin 0
   padding 0 20px
   overflow hidden
-
   &:after
     display none
-
-  & ~ & {
+  & ~ &
     margin-left 15px
-  }
-
 .button-hover
-  opacity .9
-
-
+  opacity 0.9
 .button-clear
-  border: 1px solid main-button-bg-color !important
+  border 1px solid main-button-bg-color !important
   background none !important
   color main-button-bg-color !important
-
-
 .button-grey
   color white-color !important
   background grey-button-bg-color !important
-
   &.button-clear
-    border: 1px solid grey-button-bg-color !important
+    border 1px solid grey-button-bg-color !important
     background none !important
     color grey-button-bg-color !important
-
 .button-black
   color white-color !important
   background black-button-bg-color !important
-
   &.button-clear
-    border: 1px solid black-button-bg-color !important
+    border 1px solid black-button-bg-color !important
     background none !important
     color black-button-bg-color !important
-
-
 .button-large
   height large-button-height
-
 .button-big
   height big-button-height
-
 .button-small
   height small-button-height
-
 .button-circle
   border-radius main-button-height
-
   &.button-large
     border-radius large-button-height
-
   &.button-big
     border-radius big-button-height
-
   &.button-small
     border-radius small-button-height
-
-
-
-
 .button-disabled
   color white-color !important
   background disabled-button-bg-color !important
-
 .button-loading
-  opacity .6
-
+  opacity 0.6
   & .button-loading-inner
     display inline-block
-
-
 .button-loading-inner
   display none
   margin-right 12px
@@ -108,13 +81,5 @@
   border-width 2px
   border-style solid
   border-color white-color white-color white-color transparent
-  animation all .6s linear
+  animation all 0.6s linear
   animation-iteration-count infinite
-
-
-//@keyframes btn-spin
-//  0%
-//    transform rotate(0)
-
-
-

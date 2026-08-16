@@ -1,32 +1,45 @@
 <template>
-  <dialog openType="getUserInfo" id="loginDialog"></dialog>
-  <view class="page white">
+  <dialog id="loginDialog"></dialog>
+  <view class="page white bg-white">
     <view class="index-banner">
-      <image class="banner-img" lazy-load src="{{indexInfo.banner}}"></image>
+      <image class="banner-img" lazy-load src="{{ indexInfo.banner }}"></image>
     </view>
     <view class="index-menus">
-      <view data-url="/pages/userCard/index" bindtap="tapNavTo" hover-class="index-menus-item-hover"
-            class="index-menus-item">
+      <view
+        data-url="/pages/userCard/index"
+        bindtap="tapNavTo"
+        hover-class="index-menus-item-hover"
+        class="index-menus-item"
+      >
         <view class="index-menus-icon">
           <image src="../../assets/images/entrance_user_code.png" mode="widthFix"></image>
         </view>
         <view class="index-menus-text">会员码</view>
-        <view class="index-menus-after">
-          VIP{{indexInfo.level}}
-        </view>
+        <view class="index-menus-after"> VIP{{ indexInfo.level }} </view>
       </view>
-      <view data-url="/pages/shop/index" bindtap="tapNavTo" hover-class="index-menus-item-hover"
-            class="index-menus-item">
+      <view
+        data-url="/pages/shop/index"
+        bindtap="tapNavTo"
+        hover-class="index-menus-item-hover"
+        class="index-menus-item"
+      >
         <view class="index-menus-icon">
           <image src="../../assets/images/entrance_shop.png" mode="widthFix"></image>
         </view>
         <view class="index-menus-text">外卖订餐</view>
       </view>
-      <view data-url="/pages/store/index" bindtap="tapNavTo" hover-class="index-menus-item-hover"
-            class="index-menus-item">
+      <view
+        data-url="/pages/store/index"
+        bindtap="tapNavTo"
+        hover-class="index-menus-item-hover"
+        class="index-menus-item"
+      >
         <view class="index-menus-icon">
-          <image src="../../assets/images/entrance_store.png" hover-class="index-menus-item-hover"
-                 mode="widthFix"></image>
+          <image
+            src="../../assets/images/entrance_store.png"
+            hover-class="index-menus-item-hover"
+            mode="widthFix"
+          ></image>
         </view>
         <view class="index-menus-text">到店自提</view>
       </view>
@@ -38,144 +51,162 @@
       </view>
     </view>
 
-    <view class="index-banner-list" wx:if="{{indexInfo.list && indexInfo.list.length>0}}">
-      <view class="index-banner-list-item"  bindtap="{{item.link?'tapNavTo':''}}" data-url="/{{item.link}}" data-banner="{{banner}}" wx:for="{{indexInfo.list}}" wx:key="banner">
-        <image src="{{item.url}}" lazy-load mode="widthFix"></image>
+    <view class="index-banner-list" wx:if="{{ indexInfo.list && indexInfo.list.length > 0 }}">
+      <view
+        class="index-banner-list-item"
+        bindtap="{{ item.link ? 'tapNavTo' : '' }}"
+        data-url="/{{ item.link }}"
+        wx:for="{{ indexInfo.list }}"
+        wx:key="banner"
+      >
+        <image src="{{ item.url }}" lazy-load mode="widthFix"></image>
       </view>
     </view>
-
   </view>
 </template>
 
-<script>
-  import {createPage} from '@mpxjs/core'
-  import IndexApi from '../../api/Index'
-  import WxUtils from '../../utils/WxUtils'
+<script lang="ts">
+import mpx, { createPage, onShow, ref } from '@mpxjs/core'
+import IndexApi, { type IndexInfo } from '../../api/Index'
+import WxUtils from '../../utils/WxUtils'
 
-  createPage({
-    data: {
-      indexInfo: {
-        list:[]
+createPage({
+  setup (_, context) {
+    const indexInfo = ref<IndexInfo>({ list: [] })
+
+    const getIndex = async (): Promise<void> => {
+      try {
+        indexInfo.value = await IndexApi.index()
+      } catch (error) {
+        console.error('首页数据加载失败', error)
       }
-    },
-    onShow() {
-      this.getIndex()
-    },
-    getIndex() {
-      IndexApi.index().then(res => {
-        console.log(res);
-        this.indexInfo = res
-      }).catch(e => {
-        console.log(e);
-      })
-    },
-    toScan() {
-      const self = this
-      wx.scanCode({
-        onlyFromCamera: true,
-        success: (res) => {
-          if (res.path) {
-            WxUtils.navigate(res.path)
-            return false
-          }
-          self.showDialog({
-            title: `温馨提示`,
-            content: `虽然你不是扫描'好色派沙拉桌号'，但是我还是告诉你，你这次扫描的内容是:${res.result}`
-          })
+    }
+
+    const showDialog = (options: Record<string, string>): Promise<unknown> => {
+      const dialog = context.selectComponent('#loginDialog') as unknown as {
+        open: (dialogOptions?: Record<string, string>) => Promise<unknown>
+      } | null
+      if (!dialog) {
+        return Promise.reject(new Error('登录弹窗尚未挂载'))
+      }
+      return dialog.open(options)
+    }
+
+    const toScan = async (): Promise<void> => {
+      try {
+        const res = await (mpx as any).scanCode({ onlyFromCamera: true }) as {
+          path?: string
+          result?: string
         }
-      })
-    },
-  })
+        if (res.path) {
+          WxUtils.navigate(res.path)
+          return
+        }
+        await showDialog({
+          title: '温馨提示',
+          content: `虽然你不是扫描“好色派沙拉桌号”，但是我还是告诉你，你这次扫描的内容是：${res.result || ''}`
+        })
+      } catch (error) {
+        // 用户主动取消扫码时不需要打扰；其他错误保留日志便于排查。
+        if (!error || !String((error as { errMsg?: string }).errMsg || '').includes('cancel')) {
+          console.error('扫码失败', error)
+        }
+      }
+    }
+
+    onShow(getIndex)
+
+    return { indexInfo, toScan }
+  },
+})
 </script>
 
 <style lang="stylus">
-  @import "../../assets/stylus/constant"
+@import "../../assets/stylus/constant"
 
-  .index-banner
+.index-banner
+  width 100%
+  height 178px
+  padding 14px
+  overflow hidden
+
+  .banner-img
+    display block
     width 100%
-    height 178px
-    padding 14px
-    overflow hidden
+    height 150px
+    border-radius 8px
 
-    .banner-img
+.index-menus
+  display flex
+  flex-direction row
+  flex-wrap nowrap
+  justify-content space-between
+  width 100%
+  padding 16px 14px
+
+  &-item
+    display flex
+    flex-direction column
+    flex-wrap nowrap
+    justify-content center
+    align-items center
+    flex 1
+    position relative
+
+    &-hover
+      background-color rgba(0, 0, 0, .05)
+
+  &-icon
+    width 63px
+
+    image
+      display block
+      width 63px
+      height auto
+
+  &-text
+    font-size main-font-size
+
+  &-after
+    position absolute
+    top 6px
+    right 10px
+    background url("../../assets/images/entrance_user_code_top.png") no-repeat center #fff;
+    background-size 34px 16px
+    width 38px
+    height 20px
+    border-radius 20px
+    overflow hidden
+    color #fff
+    display flex
+    justify-content center
+    align-items center
+    font-size small-font-size
+
+.index-banner-list
+  width 100%
+  padding 16px 14px
+  overflow hidden
+  &-item
+    width 100%
+    border-radius 8px
+    overflow hidden
+    &:not(:first-child)
+      margin-top 14px
+    image
       display block
       width 100%
-      height 150px
-      border-radius 8px
-
-  .index-menus
-    display flex
-    flex-direction row
-    flex-wrap nowrap
-    justify-content space-between
-    width 100%
-    padding 16px 14px
-
-    &-item
-      display flex
-      flex-direction column
-      flex-wrap nowrap
-      justify-content center
-      align-items center
-      flex 1
-      position relative
-
-      &-hover
-        background-color rgba(0, 0, 0, .05)
-
-    &-icon
-      width 63px
-
-      image
-        display block
-        width 63px
-        height auto
-
-    &-text
-      font-size main-font-size
-
-    &-after
-      position absolute
-      top 6px
-      right 10px
-      background url("../../assets/images/entrance_user_code_top.png") no-repeat center #fff;
-      background-size 34px 16px
-      width 38px
-      height 20px
-      border-radius 20px
-      overflow hidden
-      color #fff
-      display flex
-      justify-content center
-      align-items center
-      font-size small-font-size
-
-  .index-banner-list
-    width 100%
-    padding 16px 14px
-    overflow hidden
-    &-item
-      width 100%
-      border-radius 8px
-      overflow hidden
-      &:not(:first-child)
-        margin-top 14px
-      image
-        display block
-        width 100%
-        height auto
+      height auto
 </style>
+
 <script type="application/json">
-  {
-    "navigationBarTitleText": "权味+",
-    "navigationBarBackgroundColor": "#ffffff",
-    "navigationBarTextStyle": "black",
-    "backgroundColor": "#ffffff",
-    "backgroundTextStyle": "dark",
-    "enablePullDownRefresh": false,
-    "disableScroll": false,
-    "usingComponents": {
-      "dialog": "../../components/dialog/index"
-    }
+{
+  "navigationBarTitleText": "权味+",
+  "navigationBarBackgroundColor": "#ffffff",
+  "backgroundColor": "#ffffff",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "dialog": "../../components/dialog/index"
   }
+}
 </script>

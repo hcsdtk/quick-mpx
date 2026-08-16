@@ -6,12 +6,7 @@
       <text>{{ dialog.content }}</text>
     </view>
     <view class="dialog-footer">
-      <button
-        class="button button-big button-circle"
-        open-type="getUserInfo"
-        bindgetuserinfo="bindgetuserinfo"
-        hover-class="button-hover"
-      >
+      <button class="button button-big button-circle" bindtap="close">
         {{ dialog.btnText }}
       </button>
     </view>
@@ -27,26 +22,16 @@ interface DialogOptions {
   btnText?: string
 }
 
-interface UserInfoEvent {
-  detail?: {
-    errMsg?: string
-    [key: string]: unknown
-  }
-  [key: string]: unknown
-}
-
 interface DialogState {
   title: string
   content: string
   btnText: string
-  resolve: (value: UserInfoEvent['detail']) => void
-  reject: (reason?: unknown) => void
+  resolve: () => void
 }
 
 createComponent({
   properties: {
     visible: {
-      //用于外部控制组件显示和隐藏
       type: Boolean,
       value: false,
     }
@@ -56,46 +41,34 @@ createComponent({
     const noop = (): void => {}
     const dialog = ref<DialogState>({
       title: '登录小程序',
-      content: `等你好久了！\r\n欢迎来到权味+小程序。`,
-      btnText: '登录权味+',
-      resolve: noop,
-      reject: noop
+      content: '请在微信小程序中完成登录。',
+      btnText: '知道了',
+      resolve: noop
     })
 
     watch(() => props.visible, value => {
       show.value = value
     }, { immediate: true })
 
-    const open = (options: DialogOptions = {}): Promise<UserInfoEvent['detail']> => {
+    const open = (options: DialogOptions = {}): Promise<void> => {
       const {
         title = '登录小程序',
-        content = `等你好久了！\r\n欢迎来到权味+小程序。`,
-        btnText = '登录权味+'
+        content = '请在微信小程序中完成登录。',
+        btnText = '知道了'
       } = options
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
+        dialog.value = { title, content, btnText, resolve }
         show.value = true
-        dialog.value = {
-          title,
-          content,
-          btnText,
-          resolve,
-          reject
-        }
       })
     }
 
-    const bindgetuserinfo = (event: UserInfoEvent): void => {
-      const { resolve, reject } = dialog.value
-      const detail = event.detail || {}
+    const close = (): void => {
+      const resolve = dialog.value.resolve || noop
       show.value = false
-      if (String(detail.errMsg || '').endsWith(':ok')) {
-        resolve(detail)
-      } else {
-        reject(detail)
-      }
+      resolve()
     }
 
-    return { show, dialog, open, bindgetuserinfo }
+    return { show, dialog, open, close }
   }
 })
 </script>
@@ -137,6 +110,7 @@ createComponent({
     & .button
       width 100%
 </style>
+
 <script type="application/json">
 {
   "usingComponents": {
